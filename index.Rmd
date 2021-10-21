@@ -1,0 +1,126 @@
+---
+title: "Resultados Saber Pro"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(UnalData)
+library(UnalData)     # 0.0.0.9000
+library(tidyverse)    # 1.3.1
+library(dplyr)        # 1.0.7
+library(tidyr)        # 1.1.4
+library(highcharter)  # 0.8.2
+library(plotly)       # 4.10.0
+#library(echarts4r)    # 0.4.2
+library(DT)           # 0.19
+library(pals)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+source("Funciones.R", encoding = 'UTF-8')
+```
+
+Evolución histórica
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+Sexo
+=======================================================================
+
+Row 
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+Puntaje <- UnalData::Aspirantes %>% filter(TIPO_NIVEL == "Pregrado") %>%
+  mutate(Serie = factor(paste(YEAR, SEMESTRE, sep = "-"))) %>%
+  select(Serie, PTOTAL, TIPO_INS, INS_SEDE_NOMBRE, ADM_SEDE_NOMBRE, FACULTAD) %>%
+  replace_na(list(TIPO_INS = "Sin Información"))
+Split       <- split(Puntaje, Puntaje$TIPO_INS)
+GroupSizes  <- vapply(Split, nrow, integer(1))
+SampledObs  <- mapply(sample, GroupSizes, c(10000, 10000, 10000, 50))
+Get_Rows    <- function(df, rows) df[rows, , drop = FALSE]
+MiniPuntaje <- do.call(rbind, mapply(Get_Rows, Split, SampledObs, SIMPLIFY = FALSE))
+
+Msj <- "Aspirantes a pregrado (<i>no se incluye los datos atípicos</i>)"
+Plot_Boxplot(datos       = MiniPuntaje,
+             variable    = PTOTAL,
+             grupo1      = Serie,
+             outliers    = FALSE,
+             jitter      = "QUE",
+             violin      = 12345,
+             ylim        = c(0, 1000),
+             colores     = pals::jet(27),
+             sizeOutlier = 1,
+             colOutlier  = "#FF3366",
+             textBox     = "Score",
+             titulo      = "EVOLUCIÓN DEL PUNTAJE EN EL EXAMEN DE ADMISIÓN",
+             labelY      = "Puntaje",
+             libreria    = "highcharter",
+             estilo      = list(hc.Tema = 1, hc.Credits = Msj)
+             )
+```
+Column
+-----------------------------------------------------------------------
+
+### Chart B 
+
+```{r}
+Saber2020 <- UnalData::SaberPro %>% filter(YEAR == 2020) %>%
+  select(SEXO, PUNTAJE_GLOBAL, PUNT_RAZO_CUANT, PUNT_INGLES,
+         PUNT_LECT_CRIT, PUNT_COMP_CIUD, PUNT_COMU_ESCR)
+col <- c("#29ABE2", # AZUL CLARO  | Amazonia
+         "#8CC63F") # VERDE       | Bogota
+
+Numericas <- vars(PUNT_RAZO_CUANT, PUNT_INGLES, PUNT_LECT_CRIT, PUNT_COMP_CIUD, PUNT_COMU_ESCR)
+Plot_Boxplot(datos         = Saber2020,
+             variable      = PUNTAJE_GLOBAL,
+             grupo1        = SEXO,
+             numericalVars = Numericas,
+             colores       = col,
+             libreria      = "plotly"
+             )
+```
+
+### Chart C
+
+```{r}
+
+```
+
+Edad
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
